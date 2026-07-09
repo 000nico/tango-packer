@@ -1,1 +1,7 @@
 /target
+/.vscode
+packer.exe
+zen.installer.exe
+*.bin
+*.o
+*.exe
