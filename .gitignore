@@ -1,6 +1,7 @@
 /target
 /.vscode
 packer.exe
+todo.txt
 zen.installer.exe
 *.bin
 *.o

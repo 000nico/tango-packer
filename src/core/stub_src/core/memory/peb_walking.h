@@ -26,3 +26,5 @@ typedef struct {
     unsigned long long full_dll_name_buffer; // offset 0x30 - pointer to string name
 } LDR_DATA_TABLE_ENTRY_INMEMORYORDER;
 #pragma pack(pop)
+
+void* pebget(unsigned short* dllname, char* fn_name);
