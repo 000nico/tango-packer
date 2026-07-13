@@ -6,17 +6,16 @@ const IMAGE_SCN_CNT_CODE: u32 = 0x0000_0020;
 const IMAGE_SCN_MEM_EXECUTE: u32 = 0x2000_0000;
 const IMAGE_SCN_MEM_READ: u32 = 0x4000_0000;
 
-pub fn modify_stub_entry_point_address(stub_aob: &mut [u8], original_entry_point: u32) -> Result<(), String> {
-    let placeholder: u32 = 0xDEADBEEF;
+pub fn modify_pattern(aob: &mut [u8], placeholder: u32, replace_to: u32) -> Result<(), String> {
     let pattern = placeholder.to_le_bytes();
-    let new_oep_bytes = original_entry_point.to_le_bytes();
+    let new_oep_bytes = replace_to.to_le_bytes();
 
     let mut found = false;
-    for i in 0..=(stub_aob.len() - 4) {
-        if &stub_aob[i..i+4] == pattern {
+    for i in 0..=(aob.len() - 4) {
+        if &aob[i..i+4] == pattern {
 
             for j in 0..4 {
-                stub_aob[i+j] = new_oep_bytes[j];
+                aob[i+j] = new_oep_bytes[j];
             }
 
             found = true;
@@ -31,7 +30,7 @@ pub fn modify_stub_entry_point_address(stub_aob: &mut [u8], original_entry_point
     Ok(())
 }
 
-pub fn add_stub_to_pe(stub_aob: &[u8], pe: &mut PE) {
+pub fn add_stub_to_pe(stub_aob: &[u8], pe: &mut PE, original_file_size: usize) {
     match pe {
         PE::PE32(pe32) => {
             let last = pe32.sections.last().unwrap();
@@ -40,9 +39,8 @@ pub fn add_stub_to_pe(stub_aob: &[u8], pe: &mut PE) {
             let last_vs = last.physical_address;
             let new_va = align_up(last_va + last_vs, pe32.optional_header.section_alignment);
 
-            let last_ptr = last.pointer_to_raw_data;
-            let last_size = last.size_of_raw_data;
-            let new_ptr = align_up(last_ptr + last_size, pe32.optional_header.file_alignment);
+            // Place new section's raw data at the end of the entire file to preserve overlays
+            let new_ptr = align_up(original_file_size as u32, pe32.optional_header.file_alignment);
 
             let stub_size = stub_aob.len() as u32;
             let virtual_size = stub_size;
@@ -97,9 +95,8 @@ pub fn add_stub_to_pe(stub_aob: &[u8], pe: &mut PE) {
             let last_vs = last.physical_address;
             let new_va = align_up(last_va + last_vs, pe64.optional_header.section_alignment);
 
-            let last_ptr = last.pointer_to_raw_data;
-            let last_size = last.size_of_raw_data;
-            let new_ptr = align_up(last_ptr + last_size, pe64.optional_header.file_alignment);
+            // Place new section's raw data at the end of the entire file to preserve overlays
+            let new_ptr = align_up(original_file_size as u32, pe64.optional_header.file_alignment);
 
             let stub_size = stub_aob.len() as u32;
             let virtual_size = stub_size;

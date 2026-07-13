@@ -235,3 +235,279 @@ pub enum PE {
     PE32(PE32),
     PE64(PE64),
 }
+
+fn write_u8(buf: &mut Vec<u8>, offset: usize, val: u8) {
+    buf[offset] = val;
+}
+
+fn write_u16(buf: &mut Vec<u8>, offset: usize, val: u16) {
+    let bytes = val.to_le_bytes();
+    buf[offset..offset + 2].copy_from_slice(&bytes);
+}
+
+fn write_u32(buf: &mut Vec<u8>, offset: usize, val: u32) {
+    let bytes = val.to_le_bytes();
+    buf[offset..offset + 4].copy_from_slice(&bytes);
+}
+
+fn write_u64(buf: &mut Vec<u8>, offset: usize, val: u64) {
+    let bytes = val.to_le_bytes();
+    buf[offset..offset + 8].copy_from_slice(&bytes);
+}
+
+fn write_dos_header(buf: &mut Vec<u8>, dos: &DOSMZHeader) {
+    write_u16(buf, 0x00, dos.e_magic);
+    write_u16(buf, 0x02, dos.e_cblp);
+    write_u16(buf, 0x04, dos.e_cp);
+    write_u16(buf, 0x06, dos.e_crlc);
+    write_u16(buf, 0x08, dos.e_cparhdr);
+    write_u16(buf, 0x0A, dos.e_minalloc);
+    write_u16(buf, 0x0C, dos.e_maxalloc);
+    write_u16(buf, 0x0E, dos.e_ss);
+    write_u16(buf, 0x10, dos.e_sp);
+    write_u16(buf, 0x12, dos.e_csum);
+    write_u16(buf, 0x14, dos.e_ip);
+    write_u16(buf, 0x16, dos.e_cs);
+    write_u16(buf, 0x18, dos.e_lfarlc);
+    write_u16(buf, 0x1A, dos.e_ovno);
+    for i in 0..4 {
+        write_u16(buf, 0x1C + i * 2, dos.e_res[i]);
+    }
+    write_u16(buf, 0x24, dos.e_oemid);
+    write_u16(buf, 0x26, dos.e_oeminfo);
+    for i in 0..10 {
+        write_u16(buf, 0x28 + i * 2, dos.e_res2[i]);
+    }
+    write_u32(buf, 0x3C, dos.e_lfanew);
+}
+
+fn write_pe_header(buf: &mut Vec<u8>, offset: usize, pe_header: &PEHeader) {
+    write_u32(buf, offset,        pe_header.signature);
+    write_u16(buf, offset + 4,    pe_header.machine);
+    write_u16(buf, offset + 6,    pe_header.number_of_sections);
+    write_u32(buf, offset + 8,    pe_header.time_date_stamp);
+    write_u32(buf, offset + 12,   pe_header.pointer_to_symbol_table);
+    write_u32(buf, offset + 16,   pe_header.number_of_symbols);
+    write_u16(buf, offset + 20,   pe_header.size_of_optional_header);
+    write_u16(buf, offset + 22,   pe_header.characteristics);
+}
+
+fn write_optional_header32(buf: &mut Vec<u8>, offset: usize, oh: &OptionalHeader32) {
+    write_u16(buf, offset,        oh.magic);
+    write_u8 (buf, offset + 2,    oh.major_linker_version);
+    write_u8 (buf, offset + 3,    oh.minor_linker_version);
+    write_u32(buf, offset + 4,    oh.size_of_code);
+    write_u32(buf, offset + 8,    oh.size_of_initialized_data);
+    write_u32(buf, offset + 12,   oh.size_of_unitialized_data);
+    write_u32(buf, offset + 16,   oh.address_of_entry_point);
+    write_u32(buf, offset + 20,   oh.base_of_code);
+    write_u32(buf, offset + 24,   oh.base_of_data);
+    write_u32(buf, offset + 28,   oh.image_base);
+    write_u32(buf, offset + 32,   oh.section_alignment);
+    write_u32(buf, offset + 36,   oh.file_alignment);
+    write_u16(buf, offset + 40,   oh.major_operating_system_version);
+    write_u16(buf, offset + 42,   oh.minor_operating_system_version);
+    write_u16(buf, offset + 44,   oh.major_image_version);
+    write_u16(buf, offset + 46,   oh.minor_image_version);
+    write_u16(buf, offset + 48,   oh.major_subsystem_version);
+    write_u16(buf, offset + 50,   oh.minor_subsystem_version);
+    write_u32(buf, offset + 52,   oh.reserved1);
+    write_u32(buf, offset + 56,   oh.size_of_image);
+    write_u32(buf, offset + 60,   oh.size_of_headers);
+    write_u32(buf, offset + 64,   oh.check_sum);
+    write_u16(buf, offset + 68,   oh.subsystem);
+    write_u16(buf, offset + 70,   oh.dll_characteristics);
+    write_u32(buf, offset + 72,   oh.size_of_stack_reserve);
+    write_u32(buf, offset + 76,   oh.size_of_stack_commit);
+    write_u32(buf, offset + 80,   oh.size_of_heap_reserve);
+    write_u32(buf, offset + 84,   oh.size_of_heap_commit);
+    write_u32(buf, offset + 88,   oh.loader_flags);
+    write_u32(buf, offset + 92,   oh.number_of_rva_and_sizes);
+    // data directories (16 entries x 8 bytes each)
+    write_u32(buf, offset + 96,   oh.export_directory_va);
+    write_u32(buf, offset + 100,  oh.export_directory_size);
+    write_u32(buf, offset + 104,  oh.import_directory_va);
+    write_u32(buf, offset + 108,  oh.import_directory_size);
+    write_u32(buf, offset + 112,  oh.resource_directory_va);
+    write_u32(buf, offset + 116,  oh.resource_directory_size);
+    write_u32(buf, offset + 120,  oh.exception_directory_va);
+    write_u32(buf, offset + 124,  oh.exception_directory_size);
+    write_u32(buf, offset + 128,  oh.security_directory_va);
+    write_u32(buf, offset + 132,  oh.security_directory_size);
+    write_u32(buf, offset + 136,  oh.base_relocation_table_va);
+    write_u32(buf, offset + 140,  oh.base_relocation_table_size);
+    write_u32(buf, offset + 144,  oh.debug_directory_va);
+    write_u32(buf, offset + 148,  oh.debug_directory_size);
+    write_u32(buf, offset + 152,  oh.architecture_specific_data_va);
+    write_u32(buf, offset + 156,  oh.architecture_specific_data_size);
+    write_u32(buf, offset + 160,  oh.rva_of_gp_va);
+    write_u32(buf, offset + 164,  oh.rva_of_gp_size);
+    write_u32(buf, offset + 168,  oh.tls_directory_va);
+    write_u32(buf, offset + 172,  oh.tls_directory_size);
+    write_u32(buf, offset + 176,  oh.load_configuration_directory_va);
+    write_u32(buf, offset + 180,  oh.load_configuration_directory_size);
+    write_u32(buf, offset + 184,  oh.bound_import_directory_in_headers_va);
+    write_u32(buf, offset + 188,  oh.bound_import_directory_in_headers_size);
+    write_u32(buf, offset + 192,  oh.import_address_table_va);
+    write_u32(buf, offset + 196,  oh.import_address_table_size);
+    write_u32(buf, offset + 200,  oh.delay_load_import_descriptors_va);
+    write_u32(buf, offset + 204,  oh.delay_load_import_descriptors_size);
+    write_u32(buf, offset + 208,  oh.com_runtime_descriptor_va);
+    write_u32(buf, offset + 212,  oh.com_runtime_descriptor_size);
+    write_u32(buf, offset + 216,  oh.reserved_0_1);
+    write_u32(buf, offset + 220,  oh.reserved_0_2);
+}
+
+fn write_optional_header64(buf: &mut Vec<u8>, offset: usize, oh: &OptionalHeader64) {
+    write_u16(buf, offset,        oh.magic);
+    write_u8 (buf, offset + 2,    oh.major_linker_version);
+    write_u8 (buf, offset + 3,    oh.minor_linker_version);
+    write_u32(buf, offset + 4,    oh.size_of_code);
+    write_u32(buf, offset + 8,    oh.size_of_initialized_data);
+    write_u32(buf, offset + 12,   oh.size_of_unitialized_data);
+    write_u32(buf, offset + 16,   oh.address_of_entry_point);
+    write_u32(buf, offset + 20,   oh.base_of_code);
+    write_u64(buf, offset + 24,   oh.image_base);       // u64 en PE64
+    write_u32(buf, offset + 32,   oh.section_alignment);
+    write_u32(buf, offset + 36,   oh.file_alignment);
+    write_u16(buf, offset + 40,   oh.major_operating_system_version);
+    write_u16(buf, offset + 42,   oh.minor_operating_system_version);
+    write_u16(buf, offset + 44,   oh.major_image_version);
+    write_u16(buf, offset + 46,   oh.minor_image_version);
+    write_u16(buf, offset + 48,   oh.major_subsystem_version);
+    write_u16(buf, offset + 50,   oh.minor_subsystem_version);
+    write_u32(buf, offset + 52,   oh.reserved1);
+    write_u32(buf, offset + 56,   oh.size_of_image);
+    write_u32(buf, offset + 60,   oh.size_of_headers);
+    write_u32(buf, offset + 64,   oh.check_sum);
+    write_u16(buf, offset + 68,   oh.subsystem);
+    write_u16(buf, offset + 70,   oh.dll_characteristics);
+    write_u64(buf, offset + 72,   oh.size_of_stack_reserve);  // u64 en PE64
+    write_u64(buf, offset + 80,   oh.size_of_stack_commit);
+    write_u64(buf, offset + 88,   oh.size_of_heap_reserve);
+    write_u64(buf, offset + 96,   oh.size_of_heap_commit);
+    write_u32(buf, offset + 104,  oh.loader_flags);
+    write_u32(buf, offset + 108,  oh.number_of_rva_and_sizes);
+    // data directories
+    write_u32(buf, offset + 112,  oh.export_directory_va);
+    write_u32(buf, offset + 116,  oh.export_directory_size);
+    write_u32(buf, offset + 120,  oh.import_directory_va);
+    write_u32(buf, offset + 124,  oh.import_directory_size);
+    write_u32(buf, offset + 128,  oh.resource_directory_va);
+    write_u32(buf, offset + 132,  oh.resource_directory_size);
+    write_u32(buf, offset + 136,  oh.exception_directory_va);
+    write_u32(buf, offset + 140,  oh.exception_directory_size);
+    write_u32(buf, offset + 144,  oh.security_directory_va);
+    write_u32(buf, offset + 148,  oh.security_directory_size);
+    write_u32(buf, offset + 152,  oh.base_relocation_table_va);
+    write_u32(buf, offset + 156,  oh.base_relocation_table_size);
+    write_u32(buf, offset + 160,  oh.debug_directory_va);
+    write_u32(buf, offset + 164,  oh.debug_directory_size);
+    write_u32(buf, offset + 168,  oh.architecture_specific_data_va);
+    write_u32(buf, offset + 172,  oh.architecture_specific_data_size);
+    write_u32(buf, offset + 176,  oh.rva_of_gp_va);
+    write_u32(buf, offset + 180,  oh.rva_of_gp_size);
+    write_u32(buf, offset + 184,  oh.tls_directory_va);
+    write_u32(buf, offset + 188,  oh.tls_directory_size);
+    write_u32(buf, offset + 192,  oh.load_configuration_directory_va);
+    write_u32(buf, offset + 196,  oh.load_configuration_directory_size);
+    write_u32(buf, offset + 200,  oh.bound_import_directory_in_headers_va);
+    write_u32(buf, offset + 204,  oh.bound_import_directory_in_headers_size);
+    write_u32(buf, offset + 208,  oh.import_address_table_va);
+    write_u32(buf, offset + 212,  oh.import_address_table_size);
+    write_u32(buf, offset + 216,  oh.delay_load_import_descriptors_va);
+    write_u32(buf, offset + 220,  oh.delay_load_import_descriptors_size);
+    write_u32(buf, offset + 224,  oh.com_runtime_descriptor_va);
+    write_u32(buf, offset + 228,  oh.com_runtime_descriptor_size);
+    write_u32(buf, offset + 232,  oh.reserved_0_1);
+    write_u32(buf, offset + 236,  oh.reserved_0_2);
+}
+
+fn write_section_header(buf: &mut Vec<u8>, offset: usize, section: &SectionHeader) {
+    buf[offset..offset + 8].copy_from_slice(&section.name);
+    write_u32(buf, offset + 8,  section.physical_address);
+    write_u32(buf, offset + 12, section.virtual_address);
+    write_u32(buf, offset + 16, section.size_of_raw_data);
+    write_u32(buf, offset + 20, section.pointer_to_raw_data);
+    write_u32(buf, offset + 24, section.pointer_to_relocations);
+    write_u32(buf, offset + 28, section.pointer_to_line_numbers);
+    write_u16(buf, offset + 32, section.number_of_relocations);
+    write_u16(buf, offset + 34, section.number_of_line_numbers);
+    write_u32(buf, offset + 36, section.characteristics);
+}
+
+pub fn serialize_pe(pe: &PE, original_aob: &[u8], stub_aob: &[u8]) -> Vec<u8> {
+    match pe {
+        PE::PE32(pe32) => serialize_pe32(pe32, original_aob, stub_aob),
+        PE::PE64(pe64) => serialize_pe64(pe64, original_aob, stub_aob),
+    }
+}
+
+fn serialize_pe32(pe32: &PE32, original_aob: &[u8], stub_aob: &[u8]) -> Vec<u8> {
+    let stub_section = pe32.sections.last().unwrap();
+    let total_size = (stub_section.pointer_to_raw_data + stub_section.size_of_raw_data) as usize;
+
+    // start from original bytes (preserves DOS stub, imports, resources, etc.)
+    let mut buf = original_aob.to_vec();
+    if buf.len() < total_size {
+        buf.resize(total_size, 0u8);
+    }
+
+    // rewrite DOS header
+    write_dos_header(&mut buf, &pe32.dos_mz_header);
+
+    // rewrite PE header (at e_lfanew)
+    let nt_offset = pe32.dos_mz_header.e_lfanew as usize;
+    write_pe_header(&mut buf, nt_offset, &pe32.pe_header);
+
+    // rewrite optional header (right after PE header = nt_offset + 4 + 20)
+    let oh_offset = nt_offset + 4 + 20;
+    write_optional_header32(&mut buf, oh_offset, &pe32.optional_header);
+
+    // rewrite all section headers
+    let sections_offset = oh_offset + pe32.pe_header.size_of_optional_header as usize;
+    for (i, section) in pe32.sections.iter().enumerate() {
+        write_section_header(&mut buf, sections_offset + i * 40, section);
+    }
+
+    // write stub bytes into the new section's raw data offset
+    let stub_ptr = stub_section.pointer_to_raw_data as usize;
+    let stub_size = stub_aob.len();
+    buf[stub_ptr..stub_ptr + stub_size].copy_from_slice(stub_aob);
+
+    buf
+}
+
+fn serialize_pe64(pe64: &PE64, original_aob: &[u8], stub_aob: &[u8]) -> Vec<u8> {
+    let stub_section = pe64.sections.last().unwrap();
+    let total_size = (stub_section.pointer_to_raw_data + stub_section.size_of_raw_data) as usize;
+
+    let mut buf = original_aob.to_vec();
+    if buf.len() < total_size {
+        buf.resize(total_size, 0u8);
+    }
+
+    // rewrite DOS header
+    write_dos_header(&mut buf, &pe64.dos_mz_header);
+
+    // rewrite PE header
+    let nt_offset = pe64.dos_mz_header.e_lfanew as usize;
+    write_pe_header(&mut buf, nt_offset, &pe64.pe_header);
+
+    // rewrite optional header
+    let oh_offset = nt_offset + 4 + 20;
+    write_optional_header64(&mut buf, oh_offset, &pe64.optional_header);
+
+    // rewrite all section headers
+    let sections_offset = oh_offset + pe64.pe_header.size_of_optional_header as usize;
+    for (i, section) in pe64.sections.iter().enumerate() {
+        write_section_header(&mut buf, sections_offset + i * 40, section);
+    }
+
+    // write stub bytes into the new section's raw data offset
+    let stub_ptr = stub_section.pointer_to_raw_data as usize;
+    let stub_size = stub_aob.len();
+    buf[stub_ptr..stub_ptr + stub_size].copy_from_slice(stub_aob);
+
+    buf
+}

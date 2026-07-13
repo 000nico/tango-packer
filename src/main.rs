@@ -8,6 +8,7 @@ use crate::core::parser::parser::*;
 use crate::core::parser::pe::*;
 use crate::core::cryptography::encrypt_text::*;
 use crate::core::pe_patcher::stub_patch::add_stub_to_pe;
+use crate::stub_patch::modify_pattern;
 use crate::core::pe_patcher::*;
 
 fn main() {
@@ -54,16 +55,28 @@ fn main() {
 
     println!("original entry point: {}", original_entry_point);
 
-    // 4. replace pattern in stub
-    match modify_stub_entry_point_address(, original_entry_point) {
-        Ok(_) => {
-            println!("stub entry point patched");
-        }
-        Err(e) => {
-            println!("error patching stub entry point");
-        }
+    // add shellcode
+    const SHELLCODE: &[u8] = include_bytes!("core/stub_src/output/shellcode.bin");
+    let mut stub_aob = SHELLCODE.to_vec();
+
+    // 4. replace patterns in stub
+    match modify_pattern(&mut stub_aob, 0xDEADBEEF, original_entry_point) {
+        Ok(_) => println!("stub entry point patched"),
+        Err(e) =>  println!("error patching stub entry point: {}", e)
+        
+    }
+
+    match modify_pattern(&mut stub_aob, 0xCAFEBABE, 123) {
+        Ok(_) => println!("key patched"),
+        Err(e) => println!("error patching key: {}", e)
     }
 
     // 5. add stub to pe (modifies entry point itself)
-    add_stub_to_pe(stub_aob, &mut pe);
+    add_stub_to_pe(&stub_aob, &mut pe, aob.len());
+
+    // 6. serialize pe back to bytes and write to disk
+    let output_aob = serialize_pe(&pe, &aob, &stub_aob);
+    fs::write("output.exe", &output_aob).expect("failed writing output");
+
+    println!("done! output.exe written ({} bytes)", output_aob.len());
 }

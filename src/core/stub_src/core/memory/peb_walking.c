@@ -13,8 +13,6 @@ unsigned long long get_image_base_address(void) {
     return *(unsigned long long*)(peb + 0x10);
 }
 
-// warning
-// for example, if you search kernel32.dll, it can match with, for example, kernel32legacy.dll
 unsigned long long pebgetdll(unsigned short* name){
     PEB* peb = (PEB*)get_peb_address();
 
@@ -24,9 +22,9 @@ unsigned long long pebgetdll(unsigned short* name){
     LDR_DATA_TABLE_ENTRY_INMEMORYORDER* start_node = first_node;
 
     while(1){
-        unsigned short* dll_name = (unsigned short *)first_node->full_dll_name_buffer;
+        unsigned short* dll_name = (unsigned short *)first_node->base_dll_name_buffer;
 
-        if(!my_wcscmp(name, dll_name)){
+        if(dll_name && !my_wcsicmp(name, dll_name)){
             return first_node->dll_base;
             break;
         }
@@ -51,7 +49,7 @@ void* eatget(unsigned long long dll_base, char* fn_name){
     // array of names
     unsigned int* namesArray = (unsigned int*)(dll_base + exportDir->AddressOfNames);
     void* func = 0;
-    for(int i = 0; i < exportDir->NumberOfNames; i++){
+    for(unsigned int i = 0; i < exportDir->NumberOfNames; i++){
         char* funcName = (char*)(dll_base + namesArray[i]);
 
         if(!my_strcmp(funcName, fn_name)){

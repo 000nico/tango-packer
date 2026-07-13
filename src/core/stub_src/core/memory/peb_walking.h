@@ -15,15 +15,21 @@ typedef struct {
 
 #pragma pack(push, 1)
 typedef struct {
-    unsigned long long flink;              // offset 0x00 - next node
-    unsigned long long blink;              // offset 0x08 - previous node
-    unsigned long long dll_base;           // offset 0x10 - base address of dll
-    unsigned long long entry_point;        // offset 0x18
-    unsigned long long size_of_image;      // offset 0x20
-    unsigned short full_dll_name_length;   // offset 0x28
-    unsigned short full_dll_name_max_length; // offset 0x2A
-    unsigned int padding1;
-    unsigned long long full_dll_name_buffer; // offset 0x30 - pointer to string name
+    unsigned long long flink;              // 0x00
+    unsigned long long blink;              // 0x08
+    unsigned char reserved[16];            // 0x10 - InInitializationOrderLinks
+    unsigned long long dll_base;           // 0x20
+    unsigned long long entry_point;        // 0x28
+    unsigned int size_of_image;            // 0x30
+    unsigned int padding1;                 // 0x34
+    unsigned short full_dll_name_length;   // 0x38
+    unsigned short full_dll_name_max_length; // 0x3A
+    unsigned int padding2;                 // 0x3C
+    unsigned long long full_dll_name_buffer; // 0x40
+    unsigned short base_dll_name_length;   // 0x48
+    unsigned short base_dll_name_max_length; // 0x4A
+    unsigned int padding3;                 // 0x4C
+    unsigned long long base_dll_name_buffer; // 0x50
 } LDR_DATA_TABLE_ENTRY_INMEMORYORDER;
 #pragma pack(pop)
 
