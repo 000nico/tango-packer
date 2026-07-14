@@ -1,4 +1,4 @@
-#include "peb_walking.h"
+#include "peb.h"
 #include "../pe/pe.h"
 #include "../sdk/strings/strings.h"
 

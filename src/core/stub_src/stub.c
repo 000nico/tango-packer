@@ -1,10 +1,11 @@
 #include "core/memory/memory.h"
 #include "core/pe/pe.h"
-#include "core/patch/placeholders/placeholders.c"
-#include "core/cryptography/xor/xor.h"
-#include "core/memory/peb_walking.h"
+#include "core/patch/placeholders.c"
+#include "core/crypto/xor.h"
+#include "core/peb/peb.h"
 #include "core/sdk/strings/strings.h"
-#include "core/memory/functions_structs.h"
+#include "core/winapi/imports.h"
+#include "core/winapi/constants.h"
 
 void stub_main() {
     volatile unsigned long long image_base = get_real_image_base();

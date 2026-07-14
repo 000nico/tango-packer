@@ -1,3 +1,9 @@
+#ifndef PE_H
+#define PE_H
+
+#include "../winapi/constants.h"
+
+// ---------- SECTION HEADER ----------
 #pragma pack(push, 1)
 typedef struct {
     unsigned char name[8];
@@ -54,9 +60,6 @@ typedef struct _IMAGE_DATA_DIRECTORY {
     unsigned int VirtualAddress;
     unsigned int Size;
 } IMAGE_DATA_DIRECTORY;
-
-#define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
-#define IMAGE_DIRECTORY_ENTRY_EXPORT     0
 
 // ---------- OPTIONAL HEADER 64 ----------
 typedef struct _IMAGE_OPTIONAL_HEADER64 {
@@ -117,3 +120,5 @@ typedef struct _IMAGE_EXPORT_DIRECTORY {
 #pragma pack(pop)
 
 void get_text_rva_and_size(unsigned int* text_rva, unsigned int* text_size, unsigned long long number_of_sections, unsigned long long section_headers_address);
+
+#endif // PE_H

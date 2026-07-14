@@ -3,11 +3,12 @@ the ones being used. Marking every page as non executable, the OS will throw an 
 A thread will handle this exception. search for the page trying to be executed, decrypting it, adding permission for execution
 then check rip, and encrypt again the page if its not being executed anymore */
 
-#include "../memory/functions_structs.h"
 #include "veh.h"
-#include "../memory/peb_walking.h"
-#include "../cryptography/xor/xor.h"
-#include "../patch/placeholders/placeholders.h"
+#include "../winapi/constants.h"
+#include "../winapi/imports.h"
+#include "../peb/peb.h"
+#include "../crypto/xor.h"
+#include "../patch/placeholders.h"
 
 long handler(struct _EXCEPTION_POINTERS* ExceptionInfo);
 
@@ -19,8 +20,8 @@ void start_veh(){
 }
 
 long handler(struct _EXCEPTION_POINTERS* ExceptionInfo){
-    if(ExceptionInfo->ExceptionRecord->ExceptionCode != 0xC0000005)
-        return 0; // 0 equals to EXCEPTION_CONTINUE_SEARCH
+    if(ExceptionInfo->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
+        return EXCEPTION_CONTINUE_SEARCH;
 
     PVOID exception_addr = (PVOID)ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
 
@@ -41,5 +42,5 @@ long handler(struct _EXCEPTION_POINTERS* ExceptionInfo){
     // decrypt
     unencrypt(mbi.BaseAddress, mbi.RegionSize, key);
 
-    return -1; // equals to EXCEPTION_CONTINUE_EXECUTION
+    return EXCEPTION_CONTINUE_EXECUTION;
 }

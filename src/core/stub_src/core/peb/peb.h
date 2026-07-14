@@ -1,3 +1,7 @@
+#ifndef PEB_H
+#define PEB_H
+
+// ---------- PEB structures ----------
 #pragma pack(push, 1)
 typedef struct {
     unsigned char reserved1[0x10];        // offset 0x00 
@@ -33,4 +37,11 @@ typedef struct {
 } LDR_DATA_TABLE_ENTRY_INMEMORYORDER;
 #pragma pack(pop)
 
+// ---------- PEB walking API ----------
+unsigned long long get_peb_address(void);
+unsigned long long get_image_base_address(void);
+unsigned long long pebgetdll(unsigned short* name);
+void* eatget(unsigned long long dll_base, char* fn_name);
 void* pebget(unsigned short* dllname, char* fn_name);
+
+#endif // PEB_H
