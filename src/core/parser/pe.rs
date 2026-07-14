@@ -35,73 +35,7 @@ pub struct PEHeader {
 }
 
 #[derive(Default, Debug)]
-pub struct OptionalHeader32 {
-    pub magic: u16,
-    pub major_linker_version: u8,
-    pub minor_linker_version: u8,
-    pub size_of_code: u32,
-    pub size_of_initialized_data: u32,
-    pub size_of_unitialized_data: u32,
-    pub address_of_entry_point: u32,
-    pub base_of_code: u32,
-    pub base_of_data: u32,
-    pub image_base: u32,
-    pub section_alignment: u32,
-    pub file_alignment: u32,
-    pub major_operating_system_version: u16,
-    pub minor_operating_system_version: u16,
-    pub major_image_version: u16,
-    pub minor_image_version: u16,
-    pub major_subsystem_version: u16,
-    pub minor_subsystem_version: u16,
-    pub reserved1: u32,
-    pub size_of_image: u32,
-    pub size_of_headers: u32,
-    pub check_sum: u32,
-    pub subsystem: u16,
-    pub dll_characteristics: u16,
-    pub size_of_stack_reserve: u32,
-    pub size_of_stack_commit: u32,
-    pub size_of_heap_reserve: u32,
-    pub size_of_heap_commit: u32,
-    pub loader_flags: u32,
-    pub number_of_rva_and_sizes: u32,
-    pub export_directory_va: u32,
-    pub export_directory_size: u32,
-    pub import_directory_va: u32,
-    pub import_directory_size: u32,
-    pub resource_directory_va: u32,
-    pub resource_directory_size: u32,
-    pub exception_directory_va: u32,
-    pub exception_directory_size: u32,
-    pub security_directory_va: u32,
-    pub security_directory_size: u32,
-    pub base_relocation_table_va: u32,
-    pub base_relocation_table_size: u32,
-    pub debug_directory_va: u32,
-    pub debug_directory_size: u32,
-    pub architecture_specific_data_va: u32,
-    pub architecture_specific_data_size: u32,
-    pub rva_of_gp_va: u32,
-    pub rva_of_gp_size: u32,
-    pub tls_directory_va: u32,
-    pub tls_directory_size: u32,
-    pub load_configuration_directory_va: u32,
-    pub load_configuration_directory_size: u32,
-    pub bound_import_directory_in_headers_va: u32,
-    pub bound_import_directory_in_headers_size: u32,
-    pub import_address_table_va: u32,
-    pub import_address_table_size: u32,
-    pub delay_load_import_descriptors_va: u32,
-    pub delay_load_import_descriptors_size: u32,
-    pub com_runtime_descriptor_va: u32,
-    pub com_runtime_descriptor_size: u32,
-    pub reserved_0_1: u32,
-    pub reserved_0_2: u32,
-}
-
-#[derive(Default, Debug)]
-pub struct OptionalHeader64 {
+pub struct OptionalHeader {
     pub magic: u16,
     pub major_linker_version: u8,
     pub minor_linker_version: u8,
@@ -212,28 +146,13 @@ pub struct ImportDirectory {
 }
 
 #[derive(Default, Debug)]
-pub struct PE32 {
+pub struct PE {
     pub dos_mz_header: DOSMZHeader,
     pub pe_header: PEHeader,
-    pub optional_header: OptionalHeader32,
+    pub optional_header: OptionalHeader,
     pub sections: Vec<SectionHeader>,
     pub export_directory: ExportDirectory,
     pub import_directories: Vec<ImportDirectory>,
-}
-
-#[derive(Default, Debug)]
-pub struct PE64 {
-    pub dos_mz_header: DOSMZHeader,
-    pub pe_header: PEHeader,
-    pub optional_header: OptionalHeader64,
-    pub sections: Vec<SectionHeader>,
-    pub export_directory: ExportDirectory,
-    pub import_directories: Vec<ImportDirectory>,
-}
-
-pub enum PE {
-    PE32(PE32),
-    PE64(PE64),
 }
 
 fn write_u8(buf: &mut Vec<u8>, offset: usize, val: u8) {
@@ -292,73 +211,7 @@ fn write_pe_header(buf: &mut Vec<u8>, offset: usize, pe_header: &PEHeader) {
     write_u16(buf, offset + 22,   pe_header.characteristics);
 }
 
-fn write_optional_header32(buf: &mut Vec<u8>, offset: usize, oh: &OptionalHeader32) {
-    write_u16(buf, offset,        oh.magic);
-    write_u8 (buf, offset + 2,    oh.major_linker_version);
-    write_u8 (buf, offset + 3,    oh.minor_linker_version);
-    write_u32(buf, offset + 4,    oh.size_of_code);
-    write_u32(buf, offset + 8,    oh.size_of_initialized_data);
-    write_u32(buf, offset + 12,   oh.size_of_unitialized_data);
-    write_u32(buf, offset + 16,   oh.address_of_entry_point);
-    write_u32(buf, offset + 20,   oh.base_of_code);
-    write_u32(buf, offset + 24,   oh.base_of_data);
-    write_u32(buf, offset + 28,   oh.image_base);
-    write_u32(buf, offset + 32,   oh.section_alignment);
-    write_u32(buf, offset + 36,   oh.file_alignment);
-    write_u16(buf, offset + 40,   oh.major_operating_system_version);
-    write_u16(buf, offset + 42,   oh.minor_operating_system_version);
-    write_u16(buf, offset + 44,   oh.major_image_version);
-    write_u16(buf, offset + 46,   oh.minor_image_version);
-    write_u16(buf, offset + 48,   oh.major_subsystem_version);
-    write_u16(buf, offset + 50,   oh.minor_subsystem_version);
-    write_u32(buf, offset + 52,   oh.reserved1);
-    write_u32(buf, offset + 56,   oh.size_of_image);
-    write_u32(buf, offset + 60,   oh.size_of_headers);
-    write_u32(buf, offset + 64,   oh.check_sum);
-    write_u16(buf, offset + 68,   oh.subsystem);
-    write_u16(buf, offset + 70,   oh.dll_characteristics);
-    write_u32(buf, offset + 72,   oh.size_of_stack_reserve);
-    write_u32(buf, offset + 76,   oh.size_of_stack_commit);
-    write_u32(buf, offset + 80,   oh.size_of_heap_reserve);
-    write_u32(buf, offset + 84,   oh.size_of_heap_commit);
-    write_u32(buf, offset + 88,   oh.loader_flags);
-    write_u32(buf, offset + 92,   oh.number_of_rva_and_sizes);
-    // data directories (16 entries x 8 bytes each)
-    write_u32(buf, offset + 96,   oh.export_directory_va);
-    write_u32(buf, offset + 100,  oh.export_directory_size);
-    write_u32(buf, offset + 104,  oh.import_directory_va);
-    write_u32(buf, offset + 108,  oh.import_directory_size);
-    write_u32(buf, offset + 112,  oh.resource_directory_va);
-    write_u32(buf, offset + 116,  oh.resource_directory_size);
-    write_u32(buf, offset + 120,  oh.exception_directory_va);
-    write_u32(buf, offset + 124,  oh.exception_directory_size);
-    write_u32(buf, offset + 128,  oh.security_directory_va);
-    write_u32(buf, offset + 132,  oh.security_directory_size);
-    write_u32(buf, offset + 136,  oh.base_relocation_table_va);
-    write_u32(buf, offset + 140,  oh.base_relocation_table_size);
-    write_u32(buf, offset + 144,  oh.debug_directory_va);
-    write_u32(buf, offset + 148,  oh.debug_directory_size);
-    write_u32(buf, offset + 152,  oh.architecture_specific_data_va);
-    write_u32(buf, offset + 156,  oh.architecture_specific_data_size);
-    write_u32(buf, offset + 160,  oh.rva_of_gp_va);
-    write_u32(buf, offset + 164,  oh.rva_of_gp_size);
-    write_u32(buf, offset + 168,  oh.tls_directory_va);
-    write_u32(buf, offset + 172,  oh.tls_directory_size);
-    write_u32(buf, offset + 176,  oh.load_configuration_directory_va);
-    write_u32(buf, offset + 180,  oh.load_configuration_directory_size);
-    write_u32(buf, offset + 184,  oh.bound_import_directory_in_headers_va);
-    write_u32(buf, offset + 188,  oh.bound_import_directory_in_headers_size);
-    write_u32(buf, offset + 192,  oh.import_address_table_va);
-    write_u32(buf, offset + 196,  oh.import_address_table_size);
-    write_u32(buf, offset + 200,  oh.delay_load_import_descriptors_va);
-    write_u32(buf, offset + 204,  oh.delay_load_import_descriptors_size);
-    write_u32(buf, offset + 208,  oh.com_runtime_descriptor_va);
-    write_u32(buf, offset + 212,  oh.com_runtime_descriptor_size);
-    write_u32(buf, offset + 216,  oh.reserved_0_1);
-    write_u32(buf, offset + 220,  oh.reserved_0_2);
-}
-
-fn write_optional_header64(buf: &mut Vec<u8>, offset: usize, oh: &OptionalHeader64) {
+fn write_optional_header(buf: &mut Vec<u8>, offset: usize, oh: &OptionalHeader) {
     write_u16(buf, offset,        oh.magic);
     write_u8 (buf, offset + 2,    oh.major_linker_version);
     write_u8 (buf, offset + 3,    oh.minor_linker_version);
@@ -437,49 +290,7 @@ fn write_section_header(buf: &mut Vec<u8>, offset: usize, section: &SectionHeade
 }
 
 pub fn serialize_pe(pe: &PE, original_aob: &[u8], stub_aob: &[u8]) -> Vec<u8> {
-    match pe {
-        PE::PE32(pe32) => serialize_pe32(pe32, original_aob, stub_aob),
-        PE::PE64(pe64) => serialize_pe64(pe64, original_aob, stub_aob),
-    }
-}
-
-fn serialize_pe32(pe32: &PE32, original_aob: &[u8], stub_aob: &[u8]) -> Vec<u8> {
-    let stub_section = pe32.sections.last().unwrap();
-    let total_size = (stub_section.pointer_to_raw_data + stub_section.size_of_raw_data) as usize;
-
-    // start from original bytes (preserves DOS stub, imports, resources, etc.)
-    let mut buf = original_aob.to_vec();
-    if buf.len() < total_size {
-        buf.resize(total_size, 0u8);
-    }
-
-    // rewrite DOS header
-    write_dos_header(&mut buf, &pe32.dos_mz_header);
-
-    // rewrite PE header (at e_lfanew)
-    let nt_offset = pe32.dos_mz_header.e_lfanew as usize;
-    write_pe_header(&mut buf, nt_offset, &pe32.pe_header);
-
-    // rewrite optional header (right after PE header = nt_offset + 4 + 20)
-    let oh_offset = nt_offset + 4 + 20;
-    write_optional_header32(&mut buf, oh_offset, &pe32.optional_header);
-
-    // rewrite all section headers
-    let sections_offset = oh_offset + pe32.pe_header.size_of_optional_header as usize;
-    for (i, section) in pe32.sections.iter().enumerate() {
-        write_section_header(&mut buf, sections_offset + i * 40, section);
-    }
-
-    // write stub bytes into the new section's raw data offset
-    let stub_ptr = stub_section.pointer_to_raw_data as usize;
-    let stub_size = stub_aob.len();
-    buf[stub_ptr..stub_ptr + stub_size].copy_from_slice(stub_aob);
-
-    buf
-}
-
-fn serialize_pe64(pe64: &PE64, original_aob: &[u8], stub_aob: &[u8]) -> Vec<u8> {
-    let stub_section = pe64.sections.last().unwrap();
+    let stub_section = pe.sections.last().unwrap();
     let total_size = (stub_section.pointer_to_raw_data + stub_section.size_of_raw_data) as usize;
 
     let mut buf = original_aob.to_vec();
@@ -488,19 +299,19 @@ fn serialize_pe64(pe64: &PE64, original_aob: &[u8], stub_aob: &[u8]) -> Vec<u8> 
     }
 
     // rewrite DOS header
-    write_dos_header(&mut buf, &pe64.dos_mz_header);
+    write_dos_header(&mut buf, &pe.dos_mz_header);
 
     // rewrite PE header
-    let nt_offset = pe64.dos_mz_header.e_lfanew as usize;
-    write_pe_header(&mut buf, nt_offset, &pe64.pe_header);
+    let nt_offset = pe.dos_mz_header.e_lfanew as usize;
+    write_pe_header(&mut buf, nt_offset, &pe.pe_header);
 
     // rewrite optional header
     let oh_offset = nt_offset + 4 + 20;
-    write_optional_header64(&mut buf, oh_offset, &pe64.optional_header);
+    write_optional_header(&mut buf, oh_offset, &pe.optional_header);
 
     // rewrite all section headers
-    let sections_offset = oh_offset + pe64.pe_header.size_of_optional_header as usize;
-    for (i, section) in pe64.sections.iter().enumerate() {
+    let sections_offset = oh_offset + pe.pe_header.size_of_optional_header as usize;
+    for (i, section) in pe.sections.iter().enumerate() {
         write_section_header(&mut buf, sections_offset + i * 40, section);
     }
 

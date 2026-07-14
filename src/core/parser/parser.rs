@@ -42,75 +42,8 @@ fn parse_pe_header(aob: &[u8], e_lfanew: usize) -> Result<PEHeader, String> {
     Ok(ph)
 }
 
-fn parse_optional_header32(aob: &[u8], base: usize) -> Result<OptionalHeader32, String> {
-    let mut oh = OptionalHeader32::default();
-    oh.magic = read_u16(aob, base + 0x00);
-    oh.major_linker_version = read_u8(aob, base + 0x02);
-    oh.minor_linker_version = read_u8(aob, base + 0x03);
-    oh.size_of_code = read_u32(aob, base + 0x04);
-    oh.size_of_initialized_data = read_u32(aob, base + 0x08);
-    oh.size_of_unitialized_data = read_u32(aob, base + 0x0C);
-    oh.address_of_entry_point = read_u32(aob, base + 0x10);
-    oh.base_of_code = read_u32(aob, base + 0x14);
-    oh.base_of_data = read_u32(aob, base + 0x18);
-    oh.image_base = read_u32(aob, base + 0x1C);
-    oh.section_alignment = read_u32(aob, base + 0x20);
-    oh.file_alignment = read_u32(aob, base + 0x24);
-    oh.major_operating_system_version = read_u16(aob, base + 0x28);
-    oh.minor_operating_system_version = read_u16(aob, base + 0x2A);
-    oh.major_image_version = read_u16(aob, base + 0x2C);
-    oh.minor_image_version = read_u16(aob, base + 0x2E);
-    oh.major_subsystem_version = read_u16(aob, base + 0x30);
-    oh.minor_subsystem_version = read_u16(aob, base + 0x32);
-    oh.reserved1 = read_u32(aob, base + 0x34);
-    oh.size_of_image = read_u32(aob, base + 0x38);
-    oh.size_of_headers = read_u32(aob, base + 0x3C);
-    oh.check_sum = read_u32(aob, base + 0x40);
-    oh.subsystem = read_u16(aob, base + 0x44);
-    oh.dll_characteristics = read_u16(aob, base + 0x46);
-    oh.size_of_stack_reserve = read_u32(aob, base + 0x48);
-    oh.size_of_stack_commit = read_u32(aob, base + 0x4C);
-    oh.size_of_heap_reserve = read_u32(aob, base + 0x50);
-    oh.size_of_heap_commit = read_u32(aob, base + 0x54);
-    oh.loader_flags = read_u32(aob, base + 0x58);
-    oh.number_of_rva_and_sizes = read_u32(aob, base + 0x5C);
-    oh.export_directory_va = read_u32(aob, base + 0x60);
-    oh.export_directory_size = read_u32(aob, base + 0x64);
-    oh.import_directory_va = read_u32(aob, base + 0x68);
-    oh.import_directory_size = read_u32(aob, base + 0x6C);
-    oh.resource_directory_va = read_u32(aob, base + 0x70);
-    oh.resource_directory_size = read_u32(aob, base + 0x74);
-    oh.exception_directory_va = read_u32(aob, base + 0x78);
-    oh.exception_directory_size = read_u32(aob, base + 0x7C);
-    oh.security_directory_va = read_u32(aob, base + 0x80);
-    oh.security_directory_size = read_u32(aob, base + 0x84);
-    oh.base_relocation_table_va = read_u32(aob, base + 0x88);
-    oh.base_relocation_table_size = read_u32(aob, base + 0x8C);
-    oh.debug_directory_va = read_u32(aob, base + 0x90);
-    oh.debug_directory_size = read_u32(aob, base + 0x94);
-    oh.architecture_specific_data_va = read_u32(aob, base + 0x98);
-    oh.architecture_specific_data_size = read_u32(aob, base + 0x9C);
-    oh.rva_of_gp_va = read_u32(aob, base + 0xA0);
-    oh.rva_of_gp_size = read_u32(aob, base + 0xA4);
-    oh.tls_directory_va = read_u32(aob, base + 0xA8);
-    oh.tls_directory_size = read_u32(aob, base + 0xAC);
-    oh.load_configuration_directory_va = read_u32(aob, base + 0xB0);
-    oh.load_configuration_directory_size = read_u32(aob, base + 0xB4);
-    oh.bound_import_directory_in_headers_va = read_u32(aob, base + 0xB8);
-    oh.bound_import_directory_in_headers_size = read_u32(aob, base + 0xBC);
-    oh.import_address_table_va = read_u32(aob, base + 0xC0);
-    oh.import_address_table_size = read_u32(aob, base + 0xC4);
-    oh.delay_load_import_descriptors_va = read_u32(aob, base + 0xC8);
-    oh.delay_load_import_descriptors_size = read_u32(aob, base + 0xCC);
-    oh.com_runtime_descriptor_va = read_u32(aob, base + 0xD0);
-    oh.com_runtime_descriptor_size = read_u32(aob, base + 0xD4);
-    oh.reserved_0_1 = read_u32(aob, base + 0xD8);
-    oh.reserved_0_2 = read_u32(aob, base + 0xDC);
-    Ok(oh)
-}
-
-fn parse_optional_header64(aob: &[u8], base: usize) -> Result<OptionalHeader64, String> {
-    let mut oh = OptionalHeader64::default();
+fn parse_optional_header(aob: &[u8], base: usize) -> Result<OptionalHeader, String> {
+    let mut oh = OptionalHeader::default();
     oh.magic = read_u16(aob, base + 0x00);
     oh.major_linker_version = read_u8(aob, base + 0x02);
     oh.minor_linker_version = read_u8(aob, base + 0x03);
@@ -272,33 +205,20 @@ pub fn parse_pe(aob: &[u8]) -> Result<PE, String> {
 
     let magic = read_u16(aob, optional_base);
 
-    match magic {
-        0x10B => {
-            let optional_header = parse_optional_header32(aob, optional_base)?;
-            let (sections, export_directory, import_directories) = parse_sections_and_dirs(
-                aob,
-                e_lfanew,
-                pe_header.size_of_optional_header as usize,
-                optional_header.export_directory_va as usize,
-                optional_header.import_directory_va as usize,
-                pe_header.number_of_sections as usize,
-            )?;
-            Ok(PE::PE32(PE32 { dos_mz_header, pe_header, optional_header, sections, export_directory, import_directories }))
-        }
-        0x20B => {
-            let optional_header = parse_optional_header64(aob, optional_base)?;
-            let (sections, export_directory, import_directories) = parse_sections_and_dirs(
-                aob,
-                e_lfanew,
-                pe_header.size_of_optional_header as usize,
-                optional_header.export_directory_va as usize,
-                optional_header.import_directory_va as usize,
-                pe_header.number_of_sections as usize,
-            )?;
-            Ok(PE::PE64(PE64 { dos_mz_header, pe_header, optional_header, sections, export_directory, import_directories }))
-        }
-        _ => Err(String::from("UNKNOWN_PE_TYPE"))
+    if magic != 0x20B {
+        return Err(format!("unsupported PE format (magic={:#x}), only PE32+ (x64) is supported", magic));
     }
+
+    let optional_header = parse_optional_header(aob, optional_base)?;
+    let (sections, export_directory, import_directories) = parse_sections_and_dirs(
+        aob,
+        e_lfanew,
+        pe_header.size_of_optional_header as usize,
+        optional_header.export_directory_va as usize,
+        optional_header.import_directory_va as usize,
+        pe_header.number_of_sections as usize,
+    )?;
+    Ok(PE { dos_mz_header, pe_header, optional_header, sections, export_directory, import_directories })
 }
 
 fn read_c_string(aob: &[u8], offset: usize) -> Option<String> {
@@ -313,76 +233,37 @@ fn read_c_string(aob: &[u8], offset: usize) -> Option<String> {
 }
 
 pub fn print_pe(aob: &[u8], pe: &PE) {
-    match pe {
-        PE::PE32(p) => {
-            println!("== PE32 (x86) ==");
-            println!("e_lfanew            = {:#x}", p.dos_mz_header.e_lfanew);
-            println!("number_of_sections  = {}", p.pe_header.number_of_sections);
-            println!("characteristics     = {:#06x}", p.pe_header.characteristics);
-            println!("address_of_entry    = {:#x}", p.optional_header.address_of_entry_point);
-            println!("image_base          = {:#x}", p.optional_header.image_base);
-            println!("section_alignment   = {:#x}", p.optional_header.section_alignment);
-            println!("file_alignment      = {:#x}", p.optional_header.file_alignment);
-            println!("size_of_image       = {:#x}", p.optional_header.size_of_image);
-            println!("subsystem           = {:#x}", p.optional_header.subsystem);
-            println!("export_directory_va = {:#x} (size {:#x})", p.optional_header.export_directory_va, p.optional_header.export_directory_size);
-            println!("import_directory_va = {:#x} (size {:#x})", p.optional_header.import_directory_va, p.optional_header.import_directory_size);
+    println!("== PE32+ (x64) ==");
+    println!("e_lfanew            = {:#x}", pe.dos_mz_header.e_lfanew);
+    println!("number_of_sections  = {}", pe.pe_header.number_of_sections);
+    println!("characteristics     = {:#06x}", pe.pe_header.characteristics);
+    println!("address_of_entry    = {:#x}", pe.optional_header.address_of_entry_point);
+    println!("image_base          = {:#x}", pe.optional_header.image_base);
+    println!("section_alignment   = {:#x}", pe.optional_header.section_alignment);
+    println!("file_alignment      = {:#x}", pe.optional_header.file_alignment);
+    println!("size_of_image       = {:#x}", pe.optional_header.size_of_image);
+    println!("subsystem           = {:#x}", pe.optional_header.subsystem);
+    println!("export_directory_va = {:#x} (size {:#x})", pe.optional_header.export_directory_va, pe.optional_header.export_directory_size);
+    println!("import_directory_va = {:#x} (size {:#x})", pe.optional_header.import_directory_va, pe.optional_header.import_directory_size);
 
-            println!("\n-- sections ({}) --", p.sections.len());
-            for s in &p.sections {
-                let name = String::from_utf8_lossy(&s.name).trim_end_matches('\0').to_string();
-                println!("  {:<8} VA={:#010x} VSize={:#x} RawPtr={:#x} RawSize={:#x} chars={:#010x}",
-                    name, s.virtual_address, s.physical_address, s.pointer_to_raw_data, s.size_of_raw_data, s.characteristics);
-            }
+    println!("\n-- sections ({}) --", pe.sections.len());
+    for s in &pe.sections {
+        let name = String::from_utf8_lossy(&s.name).trim_end_matches('\0').to_string();
+        println!("  {:<8} VA={:#010x} VSize={:#x} RawPtr={:#x} RawSize={:#x} chars={:#010x}",
+            name, s.virtual_address, s.physical_address, s.pointer_to_raw_data, s.size_of_raw_data, s.characteristics);
+    }
 
-            println!("\n-- export directory --");
-            println!("  number_of_functions = {}", p.export_directory.number_of_functions);
-            println!("  number_of_names     = {}", p.export_directory.number_of_names);
+    println!("\n-- export directory --");
+    println!("  number_of_functions = {}", pe.export_directory.number_of_functions);
+    println!("  number_of_names     = {}", pe.export_directory.number_of_names);
 
-            println!("\n-- import directories ({}) --", p.import_directories.len());
-            for id in &p.import_directories {
-                let dll_name = rva_to_file_offset(id.name, &p.sections)
-                    .ok()
-                    .and_then(|off| read_c_string(aob, off))
-                    .unwrap_or_else(|| "<no resuelto>".to_string());
-                println!("  dll_name={:<20} name_rva={:#x} first_thunk={:#x} orig_first_thunk={:#x}",
-                    dll_name, id.name, id.first_thunk, id.original_first_thunk);
-            }
-        }
-        PE::PE64(p) => {
-            println!("== PE32+ (x64) ==");
-            println!("e_lfanew            = {:#x}", p.dos_mz_header.e_lfanew);
-            println!("number_of_sections  = {}", p.pe_header.number_of_sections);
-            println!("characteristics     = {:#06x}", p.pe_header.characteristics);
-            println!("address_of_entry    = {:#x}", p.optional_header.address_of_entry_point);
-            println!("image_base          = {:#x}", p.optional_header.image_base);
-            println!("section_alignment   = {:#x}", p.optional_header.section_alignment);
-            println!("file_alignment      = {:#x}", p.optional_header.file_alignment);
-            println!("size_of_image       = {:#x}", p.optional_header.size_of_image);
-            println!("subsystem           = {:#x}", p.optional_header.subsystem);
-            println!("export_directory_va = {:#x} (size {:#x})", p.optional_header.export_directory_va, p.optional_header.export_directory_size);
-            println!("import_directory_va = {:#x} (size {:#x})", p.optional_header.import_directory_va, p.optional_header.import_directory_size);
-
-            println!("\n-- sections ({}) --", p.sections.len());
-            for s in &p.sections {
-                let name = String::from_utf8_lossy(&s.name).trim_end_matches('\0').to_string();
-                println!("  {:<8} VA={:#010x} VSize={:#x} RawPtr={:#x} RawSize={:#x} chars={:#010x}",
-                    name, s.virtual_address, s.physical_address, s.pointer_to_raw_data, s.size_of_raw_data, s.characteristics);
-            }
-
-            println!("\n-- export directory --");
-            println!("  number_of_functions = {}", p.export_directory.number_of_functions);
-            println!("  number_of_names     = {}", p.export_directory.number_of_names);
-
-            println!("\n-- import directories ({}) --", p.import_directories.len());
-            for id in &p.import_directories {
-                let dll_name = rva_to_file_offset(id.name, &p.sections)
-                    .ok()
-                    .and_then(|off| read_c_string(aob, off))
-                    .unwrap_or_else(|| "<no resuelto>".to_string());
-                println!("  dll_name={:<20} name_rva={:#x} first_thunk={:#x} orig_first_thunk={:#x}",
-                    dll_name, id.name, id.first_thunk, id.original_first_thunk);
-            }
-        }
+    println!("\n-- import directories ({}) --", pe.import_directories.len());
+    for id in &pe.import_directories {
+        let dll_name = rva_to_file_offset(id.name, &pe.sections)
+            .ok()
+            .and_then(|off| read_c_string(aob, off))
+            .unwrap_or_else(|| "<no resuelto>".to_string());
+        println!("  dll_name={:<20} name_rva={:#x} first_thunk={:#x} orig_first_thunk={:#x}",
+            dll_name, id.name, id.first_thunk, id.original_first_thunk);
     }
 }

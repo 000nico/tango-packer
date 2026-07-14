@@ -15,7 +15,7 @@ Tango Packer takes a target executable and encrypts its sections. It then inject
 The project is split into two main components, each leveraging a different language suited for its specific requirements:
 
 * **The Packer (Rust)**: The builder tool that parses the target PE (Portable Executable) file, encrypts its contents, creates the new section for the stub, and reconstructs the PE headers. Rust was chosen for this component due to its memory safety, strong typing, and excellent ecosystem for binary manipulation.
-* **The Stub (C)**: The minimal runtime (the newly injected section) embedded into the packed executable. C is used for the stub because it provides fine-grained, low-level control over memory and system calls. It generates very small machine code with no runtime overhead, which is critical for a stub that needs to be stealthy, fast, and directly interact with Windows APIs (like memory protection, exception handlers, and the PEB).
+* **The Stub (C)**: The minimal runtime (the newly injected section) embedded into the packed executable. It is programmed in pure C **without any external dependencies** (no standard C runtime or `libc`). C provides fine-grained, low-level control over memory and system calls. It generates very small machine code with no runtime overhead, which is critical for a stub that needs to be stealthy, fast, and directly interact with Windows APIs (like memory protection, exception handlers, and the PEB).
 
 ## Features (In Progress)
 

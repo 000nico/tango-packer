@@ -11,10 +11,7 @@ fn executable_sections(sections: &[SectionHeader]) -> Vec<&SectionHeader> {
 
 pub fn encrypt_executable_sections(aob: &mut [u8], pe: &PE, key: u8) -> Result<(), String>  {
 
-    let sections: &Vec<SectionHeader> = match pe {
-        PE::PE32(p) => &p.sections,
-        PE::PE64(p) => &p.sections
-    };
+    let sections = &pe.sections;
 
     for s in sections {
         let is_executable = s.characteristics & IMAGE_SCN_MEM_EXECUTE != 0;

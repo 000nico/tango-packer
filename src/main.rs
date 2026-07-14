@@ -48,10 +48,7 @@ fn main() {
         }
     }
 
-    let original_entry_point = match &pe {
-        PE::PE32(pe32) => pe32.optional_header.address_of_entry_point,
-        PE::PE64(pe64) => pe64.optional_header.address_of_entry_point
-    };
+    let original_entry_point = pe.optional_header.address_of_entry_point;
 
     println!("original entry point: {}", original_entry_point);
 
