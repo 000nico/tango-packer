@@ -1,7 +1,10 @@
 #!/bin/bash
 
-CFLAGS="-Os -fno-ident -fno-asynchronous-unwind-tables -fPIE -m64 -fno-stack-protector -fvisibility=hidden"
+CFLAGS="-Os -fno-ident -fno-asynchronous-unwind-tables -fno-exceptions -fno-unwind-tables -fPIE -m64 -fno-stack-protector -fvisibility=hidden"
 CC="x86_64-w64-mingw32-gcc"
+
+mkdir -p build
+mkdir -p output
 
 # Build the shellcode components as position independent code
 echo "[*] Compiling..."
@@ -13,9 +16,9 @@ $CC -c core/memory/memory.c          -o build/memory.o        $CFLAGS
 $CC -c core/sdk/strings/strings.c    -o build/strings.o       $CFLAGS
 
 echo "[*] Linking..."
-$CC -T shellcode.ld build/stub.o build/pe.o build/peb.o build/xor.o build/memory.o build/strings.o -o build/shellcode.exe -nostdlib -Wl,--no-seh
+$CC -T shellcode.ld build/stub.o build/pe.o build/peb.o build/xor.o build/memory.o build/strings.o -o build/shellcode.elf -nostdlib -Wl,--no-seh
 
 echo "[*] Extracting raw shellcode..."
-x86_64-w64-mingw32-objcopy -O binary build/shellcode.exe output/shellcode.bin
+objcopy -O binary -j .text build/shellcode.elf output/shellcode.bin
 
 echo "[+] Done! output/shellcode.bin ($(stat -c %s output/shellcode.bin) bytes)"

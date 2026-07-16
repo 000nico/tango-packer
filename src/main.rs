@@ -7,8 +7,7 @@ use std::env::args;
 use crate::core::parser::parser::*;
 use crate::core::parser::pe::*;
 use crate::core::cryptography::encrypt_text::*;
-use crate::core::pe_patcher::stub_patch::add_stub_to_pe;
-use crate::stub_patch::modify_pattern;
+use crate::core::pe_patcher::stub_patch::{add_stub_to_pe, modify_pattern};
 use crate::core::pe_patcher::*;
 
 fn main() {

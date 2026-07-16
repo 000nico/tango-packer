@@ -23,12 +23,17 @@ void stub_main() {
     
     unsigned char* text_ptr = (unsigned char*)(image_base + text_rva);
 
+    // Resolve VirtualProtect via PEB walking
     void* vp_addr = pebget(L"kernel32.dll", "VirtualProtect");
     VirtualProtect_t VirtualProtect = (VirtualProtect_t)vp_addr;
 
+    // Make .text section writable so we can decrypt in-place
     unsigned int oldProtect;
+    VirtualProtect(text_ptr, text_size, PAGE_EXECUTE_READWRITE, &oldProtect);
 
+    // Decrypt the .text section
     unencrypt(text_ptr, text_size, key);
 
+    // Jump to the original entry point
     jump_to_original_entry_point(image_base + original_entry_point);
 }
