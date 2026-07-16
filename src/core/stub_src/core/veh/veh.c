@@ -9,13 +9,24 @@ then check rip, and encrypt again the page if its not being executed anymore */
 #include "../peb/peb.h"
 #include "../crypto/xor.h"
 #include "../patch/placeholders.h"
+#include "../../stub.h"
 
 long handler(struct _EXCEPTION_POINTERS* ExceptionInfo);
 
-void start_veh(){
-    void* aveh_addr = pebget(L"kernel32.dll", "AddVectoredExceptionHandler");
-    AddVectoredExceptionHandler_t AddVectoredExceptionHandler = (AddVectoredExceptionHandler_t)aveh_addr;
+VirtualProtect_t VirtualProtect;
+VirtualQuery_t VirtualQuery;
 
+void start_veh(){
+    // resolve fns
+    void* vq_addr = pebget(L"kernel32.dll", "VirtualQuery");
+    VirtualQuery = (VirtualQuery_t)vq_addr;
+
+    void* vp_addr = pebget(L"kernel32.dll", "VirtualProtect");
+    VirtualProtect = (VirtualProtect_t)vp_addr;
+
+    void* aveh_addr = pebget(L"kernel32.dll", "AddVectoredExceptionHandler");
+
+    AddVectoredExceptionHandler_t AddVectoredExceptionHandler = (AddVectoredExceptionHandler_t)aveh_addr;
     AddVectoredExceptionHandler(1, &handler);
 }
 
@@ -25,15 +36,15 @@ long handler(struct _EXCEPTION_POINTERS* ExceptionInfo){
 
     PVOID exception_addr = (PVOID)ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
 
-    void* vq_addr = pebget(L"kernel32.dll", "VirtualQuery");
-    VirtualQuery_t VirtualQuery = (VirtualQuery_t)vq_addr;
+    if(ExceptionInfo->ExceptionRecord->ExceptionInformation[0] != 8) // 8 = DEP/Execute
+        return EXCEPTION_CONTINUE_SEARCH;
+
+    if(exception_addr < text_ptr || exception_addr >= text_ptr + text_size)
+        return EXCEPTION_CONTINUE_SEARCH;
 
     struct _MEMORY_BASIC_INFORMATION mbi;
 
     VirtualQuery(exception_addr, &mbi, sizeof(mbi));
-
-    void* vp_addr = pebget(L"kernel32.dll", "VirtualProtect");
-    VirtualProtect_t VirtualProtect = (VirtualProtect_t)vp_addr;
 
     // change permissions
     DWORD oldProtect = 0;

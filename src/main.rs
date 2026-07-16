@@ -59,7 +59,6 @@ fn main() {
     match modify_pattern(&mut stub_aob, 0xDEADBEEF, original_entry_point) {
         Ok(_) => println!("stub entry point patched"),
         Err(e) =>  println!("error patching stub entry point: {}", e)
-        
     }
 
     match modify_pattern(&mut stub_aob, 0xCAFEBABE, 123) {

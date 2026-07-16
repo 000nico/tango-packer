@@ -11,11 +11,11 @@ SECTIONS
     . = 0;
 
     .text : {
-        *(.text .text.*)      /* code            */
-        *(.rdata .rdata.*)    /* read-only data (wide string literals, etc.) */
-        *(.rodata .rodata.*)  /* gcc rodata      */
-        *(.data .data.*)      /* initialized data */
-        *(.bss .bss.*)        /* zero-init data  */
+        *(.text .text.*)                /* code            */
+        *(.rdata .rdata.* .rdata$*)     /* read-only data (COFF $ groups too) */
+        *(.rodata .rodata.*)            /* gcc rodata      */
+        *(.data .data.* .data$*)        /* initialized data */
+        *(.bss .bss.* .bss$*)           /* zero-init data  */
     }
 
     /DISCARD/ : {
