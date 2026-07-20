@@ -6,6 +6,7 @@
 #include "core/veh/veh.h"
 #include "core/winapi/imports.h"
 #include "core/winapi/constants.h"
+#include "core/sdk/io/io.h"
 #include "stub.h"
 
 // Placeholder values patched by the Rust packer before embedding into the PE.
@@ -38,6 +39,7 @@ void stub_main() {
     // VEH path: register handler, make .text non-executable so DEP faults
     // trigger on-demand decryption via the vectored exception handler.
     start_veh(key, text_ptr, text_size);
+    my_puts("VEH started");
 
     unsigned int oldProtect;
     VirtualProtect_t myVirtualProtect = (VirtualProtect_t)pebget(L"kernel32.dll", "VirtualProtect");
@@ -59,4 +61,5 @@ void stub_main() {
 
 
     jump_to_original_entry_point(image_base + original_entry_point);
+    my_puts("jmp'ed to OEP");
 }

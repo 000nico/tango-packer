@@ -27,9 +27,28 @@ The packer incorporates advanced protection mechanisms, including:
 
 
 
+## Compilation
+
+To build the project, you must first compile the C stub (shellcode) and then build the Rust packer.
+
+1. **Compile the Stub:** 
+   Navigate to the stub source directory and run the build script (requires MinGW-w64):
+   ```cmd
+   cd src/core/stub_src
+   powershell -ExecutionPolicy Bypass -File build_shellcode.ps1
+   ```
+   *(On Linux/macOS, use `./build_shellcode.sh` instead)*
+
+2. **Build the Packer:**
+   Return to the project root and compile the Rust project:
+   ```cmd
+   cd ../../../
+   cargo build --release
+   ```
+
 ## Usage
 
-To pack an executable, simply pass it as an argument to the packer:
+To pack an executable, simply pass it as an argument to the compiled packer:
 
 ```cmd
 packer.exe <file>

@@ -14,6 +14,18 @@ typedef int (__stdcall *VirtualProtect_t)(
     unsigned int* lpflOldProtect
 );
 
+typedef void* (__stdcall *GetStdHandle_t)(
+    unsigned int nStdHandle
+);
+
+typedef int (__stdcall *WriteFile_t)(
+    void*         hFile,
+    const void*   lpBuffer,
+    unsigned int  nNumberOfBytesToWrite,
+    unsigned int* lpNumberOfBytesWritten,
+    void*         lpOverlapped
+);
+
 typedef SIZE_T (__stdcall *VirtualQuery_t)(
     void*                              lpAddress,
     struct _MEMORY_BASIC_INFORMATION*  lpBuffer,

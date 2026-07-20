@@ -13,6 +13,7 @@ $sources = @(
     @("core/crypto/xor.c",            "build/xor.o"),
     @("core/memory/memory.c",         "build/memory.o"),
     @("core/sdk/strings/strings.c",   "build/strings.o"),
+    @("core/sdk/io/io.c",             "build/io.o"),
     @("core/veh/veh.c",               "build/veh.o")
 )
 
@@ -26,7 +27,7 @@ foreach ($src in $sources) {
 }
 
 Write-Host "[*] Linking..."
-$objs = @("build/stub.o", "build/pe.o", "build/peb.o", "build/xor.o", "build/memory.o", "build/strings.o", "build/veh.o")
+$objs = @("build/stub.o", "build/pe.o", "build/peb.o", "build/xor.o", "build/memory.o", "build/strings.o", "build/io.o", "build/veh.o")
 & $CC -T shellcode.ld @objs -o build/shellcode.elf -nostdlib "-Wl,--no-seh"
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[!] Linking failed" -ForegroundColor Red
