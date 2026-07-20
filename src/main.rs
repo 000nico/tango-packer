@@ -56,12 +56,12 @@ fn main() {
     let mut stub_aob = SHELLCODE.to_vec();
 
     // 4. replace patterns in stub
-    match modify_pattern(&mut stub_aob, 0xDEADBEEF, original_entry_point) {
+    match modify_pattern(&mut stub_aob, 0xDEADBEEF_u64, original_entry_point as u64) {
         Ok(_) => println!("stub entry point patched"),
         Err(e) =>  println!("error patching stub entry point: {}", e)
     }
 
-    match modify_pattern(&mut stub_aob, 0xCAFEBABE, 123) {
+    match modify_pattern(&mut stub_aob, 0xCAFEBABE_u64, 123_u64) {
         Ok(_) => println!("key patched"),
         Err(e) => println!("error patching key: {}", e)
     }

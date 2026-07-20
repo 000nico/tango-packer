@@ -4,16 +4,17 @@ use crate::sdk::math::math::align_up;
 const IMAGE_SCN_CNT_CODE: u32 = 0x0000_0020;
 const IMAGE_SCN_MEM_EXECUTE: u32 = 0x2000_0000;
 const IMAGE_SCN_MEM_READ: u32 = 0x4000_0000;
+const IMAGE_SCN_MEM_WRITE: u32 = 0x8000_0000;
 
-pub fn modify_pattern(aob: &mut [u8], placeholder: u32, replace_to: u32) -> Result<(), String> {
+pub fn modify_pattern(aob: &mut [u8], placeholder: u64, replace_to: u64) -> Result<(), String> {
     let pattern = placeholder.to_le_bytes();
     let new_oep_bytes = replace_to.to_le_bytes();
 
     let mut found = false;
-    for i in 0..=(aob.len() - 4) {
-        if &aob[i..i+4] == pattern {
+    for i in 0..=(aob.len() - 8) {
+        if &aob[i..i+8] == pattern {
 
-            for j in 0..4 {
+            for j in 0..8 {
                 aob[i+j] = new_oep_bytes[j];
             }
 
@@ -57,7 +58,7 @@ pub fn add_stub_to_pe(stub_aob: &[u8], pe: &mut PE, original_file_size: usize) {
         pointer_to_line_numbers: 0,
         number_of_relocations: 0,
         number_of_line_numbers: 0,
-        characteristics: IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_CNT_CODE,
+        characteristics: IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_CNT_CODE,
     };
 
     pe.sections.push(new_section);

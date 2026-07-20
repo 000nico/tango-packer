@@ -21,7 +21,7 @@ pub fn encrypt_executable_sections(aob: &mut [u8], pe: &PE, key: u8) -> Result<(
         }
         
         let start = s.pointer_to_raw_data as usize;
-        let end = start + s.size_of_raw_data as usize;
+        let end = start + s.physical_address as usize; // physical_address = virtual_size (union), must match stub's decryption size
 
         if end > aob.len() {
             return Err(format!("section out of bounds").to_string());

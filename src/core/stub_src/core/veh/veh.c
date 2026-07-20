@@ -1,7 +1,11 @@
-/* the goal is use Vectored Exception Handling so we can decrypt only the necessary pages,
-the ones being used. Marking every page as non executable, the OS will throw an exception (EXCEPTION_ACCESS_VIOLATION 0xC0000005) 
-A thread will handle this exception. search for the page trying to be executed, decrypting it, adding permission for execution
-then check rip, and encrypt again the page if its not being executed anymore */
+/* Vectored Exception Handling: decrypt .text pages on demand.
+   Pages are marked as non-executable (PAGE_READWRITE). When execution hits a page,
+   the OS throws EXCEPTION_ACCESS_VIOLATION (DEP). The VEH handler decrypts the page
+   and marks it executable so execution can continue.
+
+   TODO: Re-encrypt previously decrypted pages when execution leaves them.
+   This requires tracking the "active page" and restoring PAGE_READWRITE + re-encrypting
+   when the next DEP fault occurs on a different page. Needs correct CONTEXT.Rip offset. */
 
 #include "veh.h"
 #include "../winapi/constants.h"
@@ -24,7 +28,7 @@ void start_veh(){
     void* vp_addr = pebget(L"kernel32.dll", "VirtualProtect");
     VirtualProtect = (VirtualProtect_t)vp_addr;
 
-    void* aveh_addr = pebget(L"kernel32.dll", "AddVectoredExceptionHandler");
+    void* aveh_addr = pebget(L"ntdll.dll", "RtlAddVectoredExceptionHandler");
 
     AddVectoredExceptionHandler_t AddVectoredExceptionHandler = (AddVectoredExceptionHandler_t)aveh_addr;
     AddVectoredExceptionHandler(1, &handler);
@@ -39,7 +43,7 @@ long handler(struct _EXCEPTION_POINTERS* ExceptionInfo){
     if(ExceptionInfo->ExceptionRecord->ExceptionInformation[0] != 8) // 8 = DEP/Execute
         return EXCEPTION_CONTINUE_SEARCH;
 
-    if(exception_addr < text_ptr || exception_addr >= text_ptr + text_size)
+    if(exception_addr < (PVOID)text_ptr || exception_addr >= (PVOID)(text_ptr + text_size))
         return EXCEPTION_CONTINUE_SEARCH;
 
     struct _MEMORY_BASIC_INFORMATION mbi;

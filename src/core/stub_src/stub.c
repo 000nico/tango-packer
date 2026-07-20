@@ -1,6 +1,5 @@
 #include "core/memory/memory.h"
 #include "core/pe/pe.h"
-#include "core/patch/placeholders.c"
 #include "core/crypto/xor.h"
 #include "core/peb/peb.h"
 #include "core/sdk/strings/strings.h"
@@ -9,9 +8,20 @@
 #include "core/winapi/constants.h"
 #include "stub.h"
 
+// Placeholder values patched by the Rust packer before embedding into the PE.
+// These MUST be defined in the same translation unit as stub_main() so the
+// compiler emits direct RIP-relative accesses. If they are extern (from a
+// separate .c file), MinGW generates .refptr GOT-like entries with absolute
+// addresses that break in position-independent shellcode.
+volatile unsigned long long original_entry_point = 0xDEADBEEF;
+volatile unsigned long long key = 0xCAFEBABE;
+
 // Global definitions (declared extern in stub.h, used by veh.c)
 unsigned int text_rva, text_size;
 unsigned char* text_ptr;
+
+// VirtualProtect is resolved inside start_veh() as a global (declared in veh.c)
+extern VirtualProtect_t VirtualProtect;
 
 void stub_main() {
     volatile unsigned long long image_base = get_real_image_base();
@@ -25,21 +35,29 @@ void stub_main() {
     unsigned long long section_headers_address = pe_header_address + 24 + SizeOfOptionalHeader;
 
     get_text_rva_and_size(&text_rva, &text_size, number_of_sections, section_headers_address);
-    
+
     text_ptr = (unsigned char*)(image_base + text_rva);
 
-    // Resolve VirtualProtect via PEB walking
-    void* vp_addr = pebget(L"kernel32.dll", "VirtualProtect");
-    VirtualProtect_t VirtualProtect = (VirtualProtect_t)vp_addr;
+#ifdef ENABLE_VEH
+    // VEH path: register handler, make .text non-executable so DEP faults
+    // trigger on-demand decryption via the vectored exception handler.
+    start_veh();
 
-    // Make .text section non-executable so VEH does its job
     unsigned int oldProtect;
     VirtualProtect(text_ptr, text_size, PAGE_READWRITE, &oldProtect);
+#else
+    // Direct decryption path (VEH disabled):
+    // Resolve VirtualProtect independently, decrypt the entire .text section
+    // upfront, then restore execute permissions before jumping to OEP.
+    VirtualProtect_t myVirtualProtect = (VirtualProtect_t)pebget(L"kernel32.dll", "VirtualProtect");
 
-    // Decrypt the .text section
-    // unencrypt(text_ptr, text_size, key);
+    unsigned int oldProtect;
+    myVirtualProtect(text_ptr, text_size, PAGE_READWRITE, &oldProtect);
 
-    start_veh();
+    unencrypt(text_ptr, text_size, key);
+
+    myVirtualProtect(text_ptr, text_size, PAGE_EXECUTE_READ, &oldProtect);
+#endif
 
     // Jump to the original entry point
     jump_to_original_entry_point(image_base + original_entry_point);
