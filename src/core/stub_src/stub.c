@@ -16,12 +16,9 @@
 volatile unsigned long long original_entry_point = 0xDEADBEEF;
 volatile unsigned long long key = 0xCAFEBABE;
 
-// Global definitions (declared extern in stub.h, used by veh.c)
+// Local working variables for .text section info
 unsigned int text_rva, text_size;
 unsigned char* text_ptr;
-
-// VirtualProtect is resolved inside start_veh() as a global (declared in veh.c)
-extern VirtualProtect_t VirtualProtect;
 
 void stub_main() {
     volatile unsigned long long image_base = get_real_image_base();
@@ -38,14 +35,15 @@ void stub_main() {
 
     text_ptr = (unsigned char*)(image_base + text_rva);
 
-#ifdef ENABLE_VEH
     // VEH path: register handler, make .text non-executable so DEP faults
     // trigger on-demand decryption via the vectored exception handler.
-    start_veh();
+    start_veh(key, text_ptr, text_size);
 
     unsigned int oldProtect;
-    VirtualProtect(text_ptr, text_size, PAGE_READWRITE, &oldProtect);
-#else
+    VirtualProtect_t myVirtualProtect = (VirtualProtect_t)pebget(L"kernel32.dll", "VirtualProtect");
+    myVirtualProtect(text_ptr, text_size, PAGE_READWRITE, &oldProtect);
+    
+    /* 
     // Direct decryption path (VEH disabled):
     // Resolve VirtualProtect independently, decrypt the entire .text section
     // upfront, then restore execute permissions before jumping to OEP.
@@ -57,8 +55,8 @@ void stub_main() {
     unencrypt(text_ptr, text_size, key);
 
     myVirtualProtect(text_ptr, text_size, PAGE_EXECUTE_READ, &oldProtect);
-#endif
+    */
 
-    // Jump to the original entry point
+
     jump_to_original_entry_point(image_base + original_entry_point);
 }
