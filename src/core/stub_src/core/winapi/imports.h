@@ -39,4 +39,36 @@ typedef void* (__stdcall *AddVectoredExceptionHandler_t)(
 
 typedef long (*PVECTORED_EXCEPTION_HANDLER)(EXCEPTION_POINTERS* ExceptionInfo);
 
+typedef NTSTATUS (__stdcall *NtQueryInformationProcess_t)(
+    void*          ProcessHandle,
+    unsigned int   ProcessInformationClass,
+    void*          ProcessInformation,
+    unsigned long  ProcessInformationLength,
+    unsigned long* ReturnLength
+);
+
+typedef NTSTATUS (__stdcall *NtSetInformationThread_t)(
+    void*          ThreadHandle,
+    unsigned int   ThreadInformationClass,
+    void*          ThreadInformation,
+    unsigned long  ThreadInformationLength
+);
+
+typedef void* (__stdcall *CreateThread_t)(
+    void*          lpThreadAttributes,
+    SIZE_T         dwStackSize,
+    void*          lpStartAddress,
+    void*          lpParameter,
+    unsigned long  dwCreationFlags,
+    unsigned long* lpThreadId
+);
+
+typedef void (__stdcall *Sleep_t)(
+    unsigned long dwMilliseconds
+);
+
+typedef void (__stdcall *ExitProcess_t)(
+    unsigned int uExitCode
+);
+
 #endif // WINAPI_IMPORTS_H

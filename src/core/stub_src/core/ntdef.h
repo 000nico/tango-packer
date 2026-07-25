@@ -12,5 +12,6 @@ typedef unsigned long long SIZE_T;
 typedef void*              PVOID;
 typedef int                BOOL;
 typedef unsigned int*      PDWORD;
+typedef long               NTSTATUS;
 
 #endif // NTDEF_H

@@ -4,6 +4,7 @@
 #include "core/peb/peb.h"
 #include "core/sdk/strings/strings.h"
 #include "core/veh/veh.h"
+#include "core/antidebug/antidebug.h"
 #include "core/winapi/imports.h"
 #include "core/winapi/constants.h"
 #include "core/sdk/io/io.h"
@@ -22,6 +23,12 @@ unsigned int text_rva, text_size;
 unsigned char* text_ptr;
 
 void stub_main() {
+    // Apply anti-debug protections to main thread and spawn polling thread
+    if (antidebug_start()) {
+        my_puts("debugger detected, halting");
+        while(1) { __asm__ __volatile__ ("pause"); }
+    }
+
     volatile unsigned long long image_base = get_real_image_base();
 
     unsigned long long e_lfanew = *(unsigned int*)(image_base + 0x3C);

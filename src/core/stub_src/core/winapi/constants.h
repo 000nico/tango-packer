@@ -21,4 +21,9 @@
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
 #define IMAGE_DIRECTORY_ENTRY_EXPORT     0
 
+// Anti-debug constants
+#define ProcessDebugObjectHandle  0x1E
+#define ThreadHideFromDebugger   0x11
+#define RDTSCP_THRESHOLD         500
+
 #endif // WINAPI_CONSTANTS_H
