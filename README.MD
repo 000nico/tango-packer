@@ -66,11 +66,8 @@ The stub is a minimal, position-independent runtime execution unit injected into
 * **VEH Access Fault Trapping**: Registers a custom Vectored Exception Handler via `AddVectoredExceptionHandler`. Upon triggering an `EXCEPTION_ACCESS_VIOLATION` (when execution jumps to an encrypted page), the VEH intercepts the exception, dynamically decrypts the target page using ChaCha20, elevates page permissions to `PAGE_EXECUTE_READ`, and resumes normal instruction execution.
 
 ### Anti-Debugging & Environment Integrity Checks
-* **PEB Field Inspection**: Queries `BeingDebugged` flag and `NtGlobalFlag` (`0x70` when debugged) directly from the PEB structure.
-* **Hardware Breakpoint Detection**: Inspects CPU Debug Registers (`DR0`, `DR1`, `DR2`, `DR3`) in thread contexts to detect active hardware breakpoints.
-* **Timing Delta Analysis (`RDTSCP` / `RDTSC`)**: Measures CPU clock cycle deltas across code blocks to detect single-stepping latency introduced by debuggers (e.g., x64dbg, IDA Pro).
 
-### Custom Instruction Virtual Machine (VM)
+### (TO-DO) Custom Instruction Virtual Machine (VM)
 * Critical initialization and execution control logic are embedded within a custom instruction VM architecture.
 * Replaces native x86_64 instructions with custom bytecode, interpreted dynamically by the stub to prevent straightforward static decompilation and automated reverse engineering tools (e.g., Ghidra, Hex-Rays).
 
@@ -93,7 +90,6 @@ The stub is a minimal, position-independent runtime execution unit injected into
    └─► Restore execution permissions (PAGE_EXECUTE_READ / PAGE_EXECUTE_READWRITE).
 
 4. [Memory] Execution Handover
-   ├─► Flush CPU Instruction Cache via NtFlushInstructionCache.
    └─► Indirect jump to Original Entry Point (OEP) to resume normal binary execution.
 ```
 
