@@ -7,6 +7,12 @@
 // Function pointer typedefs for APIs resolved via PEB walking.
 // Add new imported function typedefs here.
 
+typedef int (*SetProcessMitigationPolicy_t)(
+    int                 MitigationPolicy,
+    void*               lpBuffer,
+    unsigned long long  dwLength
+);
+
 typedef int (__stdcall *VirtualProtect_t)(
     void*         lpAddress,
     unsigned long long dwSize,

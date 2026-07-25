@@ -8,6 +8,7 @@
 #include "debug_object/debug_object.h"
 #include "hide_thread/hide_thread.h"
 #include "rdtscp/rdtscp.h"
+//#include "injection_protect/injection_protect.h"
 #include "../peb/peb.h"
 #include "../sdk/io/io.h"
 #include "../winapi/imports.h"
@@ -18,6 +19,7 @@
 #include "debug_object/debug_object.c"
 #include "hide_thread/hide_thread.c"
 #include "rdtscp/rdtscp.c"
+//#include "injection_protect/injection_protect.c"
 
 #define ANTIDEBUG_POLL_MS 1000
 
@@ -30,9 +32,8 @@ static int run_checks(void) {
     return 0;
 }
 
-static void die(void) {
-    ExitProcess_t myExitProcess =
-        (ExitProcess_t)pebget(L"kernel32.dll", "ExitProcess");
+static void response(void) {
+    ExitProcess_t myExitProcess = (ExitProcess_t)pebget(L"kernel32.dll", "ExitProcess");
     if (myExitProcess)
         myExitProcess(0xDEAD);
     while(1) { __asm__ __volatile__ ("hlt"); }
@@ -42,13 +43,15 @@ static unsigned long __stdcall antidebug_thread(void* param) {
     (void)param;
 
     hide_from_debugger();
+    //int injproc = setProcessMitigationCodePolicy();
+    //my_puts(injproc == 1 ? "spmcp ok" : injproc == 0 ? "spmcp failed" : "null");
 
     while (1) {
         if (cached_Sleep)
             cached_Sleep(ANTIDEBUG_POLL_MS);
 
         if (run_checks())
-            die();
+            response();
     }
 
     return 0;
@@ -67,8 +70,7 @@ int antidebug_start(void) {
 
     cached_Sleep = (Sleep_t)pebget(L"kernel32.dll", "Sleep");
 
-    CreateThread_t myCreateThread =
-        (CreateThread_t)pebget(L"kernel32.dll", "CreateThread");
+    CreateThread_t myCreateThread = (CreateThread_t)pebget(L"kernel32.dll", "CreateThread");
 
     if (myCreateThread) {
         myCreateThread(0, 0, (void*)antidebug_thread, 0, 0, 0);
