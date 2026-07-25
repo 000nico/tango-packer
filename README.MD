@@ -20,12 +20,10 @@ The project is split into two main components, each leveraging a different langu
 ## Features (In Progress)
 
 The packer incorporates advanced protection mechanisms, including:
-* **Virtualization**: Employs a custom instruction virtual machine to obfuscate execution flow and logic.
-* **Anti-Debug & Anti-Tamper**: Implements techniques to detect debuggers, analysis tools, and prevent binary modifications.
+*  (to-do) **Virtualization**: Employs a custom instruction virtual machine to obfuscate execution flow and logic.
+* **Anti-Debug**: Implements techniques to detect debuggers, analysis tools, and prevent binary modifications.
 * **Anti-Dump**: Prevents security tools and analysts from dumping the unpacked executable from memory.
 * **Vectored Exception Handling (VEH)**: Utilized for on-demand memory page decryption. By initially marking pages as non-executable, the OS throws an access violation (`EXCEPTION_ACCESS_VIOLATION`) upon execution attempt. The VEH handler catches this exception, dynamically decrypts the requested page, grants execution permissions, and resumes execution seamlessly.
-
-
 
 ## Compilation
 
