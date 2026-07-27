@@ -13,6 +13,11 @@ typedef int (*SetProcessMitigationPolicy_t)(
     unsigned long long  dwLength
 );
 
+typedef void* (__stdcall *GetProcAddress_t)(
+    void*  hModule,
+    const char* lpProcName
+);
+
 typedef int (__stdcall *VirtualProtect_t)(
     void*         lpAddress,
     unsigned long long dwSize,

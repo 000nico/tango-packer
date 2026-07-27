@@ -7,7 +7,7 @@ int setProcessMitigationCodePolicy(void) {
     PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY policy;
     policy.DUMMYUNIONNAME.Flags = 0; 
     policy.DUMMYUNIONNAME.DUMMYSTRUCTNAME.MicrosoftSignedOnly = 1;
-    SetProcessMitigationPolicy_t SetProcessMitigationPolicy = (SetProcessMitigationPolicy_t)pebget(L"kernel32.dll", "SetProcessMitigationPolicy");
+    SetProcessMitigationPolicy_t SetProcessMitigationPolicy = (SetProcessMitigationPolicy_t)pebget(L"kernelbase.dll", "SetProcessMitigationPolicy");
     if (!SetProcessMitigationPolicy) return -1;
     return SetProcessMitigationPolicy(8, &policy, sizeof(policy));
 }

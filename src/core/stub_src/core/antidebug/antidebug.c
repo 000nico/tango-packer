@@ -8,7 +8,7 @@
 #include "debug_object/debug_object.h"
 #include "hide_thread/hide_thread.h"
 #include "rdtscp/rdtscp.h"
-//#include "injection_protect/injection_protect.h"
+#include "injection_protect/injection_protect.h"
 #include "../peb/peb.h"
 #include "../sdk/io/io.h"
 #include "../winapi/imports.h"
@@ -19,7 +19,7 @@
 #include "debug_object/debug_object.c"
 #include "hide_thread/hide_thread.c"
 #include "rdtscp/rdtscp.c"
-//#include "injection_protect/injection_protect.c"
+#include "injection_protect/injection_protect.c"
 
 #define ANTIDEBUG_POLL_MS 1000
 
@@ -43,8 +43,8 @@ static unsigned long __stdcall antidebug_thread(void* param) {
     (void)param;
 
     hide_from_debugger();
-    //int injproc = setProcessMitigationCodePolicy();
-    //my_puts(injproc == 1 ? "spmcp ok" : injproc == 0 ? "spmcp failed" : "null");
+    int injproc = setProcessMitigationCodePolicy();
+    my_puts(injproc == 1 ? "spmcp ok" : injproc == 0 ? "spmcp failed" : "null");
 
     while (1) {
         if (cached_Sleep)
