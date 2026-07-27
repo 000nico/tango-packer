@@ -1,4 +1,4 @@
-use crate::core::cryptography::xor::xor_bytes;
+use crate::core::cryptography::chacha20::chacha20;
 use crate::core::parser::pe::*;
 
 const IMAGE_SCN_MEM_EXECUTE: u32 = 0x20000000;
@@ -9,7 +9,7 @@ fn executable_sections(sections: &[SectionHeader]) -> Vec<&SectionHeader> {
         .collect()
 }
 
-pub fn encrypt_executable_sections(aob: &mut [u8], pe: &PE, key: u8) -> Result<(), String>  {
+pub fn encrypt_executable_sections(aob: &mut [u8], pe: &PE, key: [[u32; 4]; 2], nonce: [u32; 3]) -> Result<(), String>  {
 
     let sections = &pe.sections;
 
@@ -27,7 +27,8 @@ pub fn encrypt_executable_sections(aob: &mut [u8], pe: &PE, key: u8) -> Result<(
             return Err(format!("section out of bounds").to_string());
         }
 
-        xor_bytes(&mut aob[start..end], key);
+        let encrypted = chacha20(&aob[start..end], key, nonce);
+        aob[start..end].copy_from_slice(&encrypted);
         
     }
 

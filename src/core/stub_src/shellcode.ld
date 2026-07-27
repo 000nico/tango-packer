@@ -12,9 +12,13 @@ SECTIONS
 
     .text : {
         *(.text .text.*)                /* code            */
+        . = ALIGN(16);
         *(.rdata .rdata.* .rdata$*)     /* read-only data (COFF $ groups too) */
+        . = ALIGN(16);
         *(.rodata .rodata.*)            /* gcc rodata      */
+        . = ALIGN(16);
         *(.data .data.* .data$*)        /* initialized data */
+        . = ALIGN(16);
         *(.bss .bss.* .bss$*)           /* zero-init data  */
     }
 

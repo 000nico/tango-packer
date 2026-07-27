@@ -11,18 +11,20 @@
 #include "../winapi/constants.h"
 #include "../winapi/imports.h"
 #include "../peb/peb.h"
-#include "../crypto/xor.h"
+#include "../crypto/chacha20.h"
 
 static long handler(struct _EXCEPTION_POINTERS* ExceptionInfo);
 
 static VirtualProtect_t VirtualProtect;
 static VirtualQuery_t VirtualQuery;
-static unsigned long long veh_key;
+__attribute__((aligned(16))) static unsigned char veh_key[32];
+__attribute__((aligned(16))) static unsigned char veh_nonce[12];
 static unsigned char* veh_text_ptr;
 static unsigned int veh_text_size;
 
-void start_veh(unsigned long long k, unsigned char* tptr, unsigned int tsize){
-    veh_key = k;
+void start_veh(unsigned char* k, unsigned char* n, unsigned char* tptr, unsigned int tsize){
+    for (int i = 0; i < 32; i++) veh_key[i] = k[i];
+    for (int i = 0; i < 12; i++) veh_nonce[i] = n[i];
     veh_text_ptr = tptr;
     veh_text_size = tsize;
     // resolve fns
@@ -65,8 +67,11 @@ static long handler(struct _EXCEPTION_POINTERS* ExceptionInfo){
     unsigned long long page_end = page_base + 0x1000;
     unsigned long long decrypt_end = page_end < text_end ? page_end : text_end;
 
+    // Calculate correct ChaCha20 block counter based on the offset from text_start
+    u32 initial_counter = 1 + ((u32)(decrypt_start - text_start) / 64);
+
     // decrypt only the valid chunk within this page
-    unencrypt((unsigned char*)decrypt_start, (unsigned int)(decrypt_end - decrypt_start), veh_key);
+    chacha20_decrypt((u8*)decrypt_start, (u64)(decrypt_end - decrypt_start), (u32(*)[4])veh_key, (u32*)veh_nonce, initial_counter);
 
     return EXCEPTION_CONTINUE_EXECUTION;
 }

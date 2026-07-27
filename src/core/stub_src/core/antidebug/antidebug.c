@@ -44,7 +44,7 @@ static unsigned long __stdcall antidebug_thread(void* param) {
 
     hide_from_debugger();
     int injproc = setProcessMitigationCodePolicy();
-    my_puts(injproc == 1 ? "spmcp ok" : injproc == 0 ? "spmcp failed" : "null");
+    //my_puts(injproc == 1 ? "spmcp ok" : injproc == 0 ? "spmcp failed" : "null");
 
     while (1) {
         if (cached_Sleep)
@@ -59,14 +59,14 @@ static unsigned long __stdcall antidebug_thread(void* param) {
 
 int antidebug_start(void) {
     hide_from_debugger();
-    my_puts("anti-debug: main thread hidden from debugger");
+    //my_puts("anti-debug: main thread hidden from debugger");
 
     if (run_checks()) {
-        my_puts("anti-debug: debugger detected on initial check");
+        //my_puts("anti-debug: debugger detected on initial check");
         return 1;
     }
 
-    my_puts("anti-debug: initial checks passed");
+    //my_puts("anti-debug: initial checks passed");
 
     cached_Sleep = (Sleep_t)pebget(L"kernel32.dll", "Sleep");
 
@@ -74,7 +74,7 @@ int antidebug_start(void) {
 
     if (myCreateThread) {
         myCreateThread(0, 0, (void*)antidebug_thread, 0, 0, 0);
-        my_puts("anti-debug: polling thread started");
+        //my_puts("anti-debug: polling thread started");
     }
 
     return 0;

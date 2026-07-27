@@ -30,6 +30,24 @@ pub fn modify_pattern(aob: &mut [u8], placeholder: u64, replace_to: u64) -> Resu
     Ok(())
 }
 
+pub fn modify_pattern_bytes(aob: &mut [u8], pattern: &[u8], replace_to: &[u8]) -> Result<(), String> {
+    if pattern.len() != replace_to.len() {
+        return Err("pattern and replacement length mismatch".to_string());
+    }
+    let mut found = false;
+    for i in 0..=(aob.len() - pattern.len()) {
+        if &aob[i..i+pattern.len()] == pattern {
+            aob[i..i+replace_to.len()].copy_from_slice(replace_to);
+            found = true;
+            break;
+        }
+    }
+    if !found {
+        return Err("did not find pattern bytes".to_string());
+    }
+    Ok(())
+}
+
 pub fn add_stub_to_pe(stub_aob: &[u8], pe: &mut PE, original_file_size: usize) {
     let last = pe.sections.last().unwrap();
 

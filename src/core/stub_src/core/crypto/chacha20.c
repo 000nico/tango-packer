@@ -61,8 +61,8 @@ static void chacha20_block(u32 key[2][4], u32 nonce[3], u32 counter, u8 keystrea
     }
 }
 
-void chacha20_decrypt(u8 *data, u64 data_len, u32 key[2][4], u32 nonce[3]) {
-    u32 counter = 1;
+void chacha20_decrypt(u8 *data, u64 data_len, u32 key[2][4], u32 nonce[3], u32 initial_counter) {
+    u32 counter = initial_counter;
     u8  keystream[64];
     u64 offset = 0;
 

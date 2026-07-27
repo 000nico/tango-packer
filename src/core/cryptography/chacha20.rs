@@ -1,14 +1,14 @@
 use rand::RngCore;
 use rand::rngs::OsRng;
 
-fn create_key() -> [[u32; 4]; 2] {
+pub fn create_key() -> [[u32; 4]; 2] {
     [
         [OsRng.next_u32(), OsRng.next_u32(), OsRng.next_u32(), OsRng.next_u32()],
         [OsRng.next_u32(), OsRng.next_u32(), OsRng.next_u32(), OsRng.next_u32()],
     ]
 }
 
-fn create_nonce() -> [u32; 3] {
+pub fn create_nonce() -> [u32; 3] {
     [OsRng.next_u32(), OsRng.next_u32(), OsRng.next_u32()]
 }
 
@@ -73,7 +73,7 @@ fn matrix_to_bytes(state: [[u32; 4]; 4]) -> [u8; 64] {
     bytes
 }
 
-fn chacha20(message: &[u8], key: [[u32; 4]; 2], nonce: [u32; 3]) -> Vec<u8> {
+pub fn chacha20(message: &[u8], key: [[u32; 4]; 2], nonce: [u32; 3]) -> Vec<u8> {
     let mut output = Vec::with_capacity(message.len());
     let mut counter: u32 = 1;
 
