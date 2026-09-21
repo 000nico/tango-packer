@@ -1,11 +1,19 @@
-```
-_____                             
-__  /______ ______________ ______ 
-_  __/  __ `/_  __ \_  __ `/  __ \
-/ /_ / /_/ /_  / / /  /_/ // /_/ /
-\__/ \__,_/ /_/ /_/_\__, / \____/ 
-                   /____/         
-```
+<div align="center">
+
+<img src="banner.jpg" alt="blue-pill" width="600">
+
+<br><br>
+
+[![license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![language](https://img.shields.io/badge/language-Rust-000000?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+[![language](https://img.shields.io/badge/language-C-A8B9CC?style=flat-square&logo=c&logoColor=black)](https://en.wikipedia.org/wiki/C_(programming_language))
+[![platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)](https://www.microsoft.com)
+
+**[features](#features) · [docs](docs/) · [contribute](#contribute)**
+
+*PE packer.*
+
+</div>
 
 # Tango Packer
 
