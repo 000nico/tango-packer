@@ -73,12 +73,6 @@ The stub is a minimal, position-independent runtime execution unit injected into
 * **Page Protection Manipulation**: Encrypted code sections can be initially set to non-executable memory permissions (`PAGE_NOACCESS` or `PAGE_READONLY`).
 * **VEH Access Fault Trapping**: Registers a custom Vectored Exception Handler via `AddVectoredExceptionHandler`. Upon triggering an `EXCEPTION_ACCESS_VIOLATION` (when execution jumps to an encrypted page), the VEH intercepts the exception, dynamically decrypts the target page using ChaCha20, elevates page permissions to `PAGE_EXECUTE_READ`, and resumes normal instruction execution.
 
-### Anti-Debugging & Environment Integrity Checks
-
-### (TO-DO) Custom Instruction Virtual Machine (VM)
-* Critical initialization and execution control logic are embedded within a custom instruction VM architecture.
-* Replaces native x86_64 instructions with custom bytecode, interpreted dynamically by the stub to prevent straightforward static decompilation and automated reverse engineering tools (e.g., Ghidra, Hex-Rays).
-
 ---
 
 ## Execution Flow Pipeline
